@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Clock</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f4ef;
+            color: #1a1a18;
+            padding: 30px 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .wc-wrap { max-width: 720px; width: 100%; padding: 1.5rem 0; }
+
+        /* Header */
+        .wc-header {
+            background: #ffffff;
+            border: 0.5px solid rgba(0,0,0,0.12);
+            border-radius: 12px;
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .wc-header-label {
+            font-size: 12px;
+            color: #888780;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .wc-home-time {
+            font-size: 42px;
+            font-weight: 500;
+            color: #1a1a18;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+        .wc-home-date {
+            font-size: 13px;
+            color: #888780;
+            margin-top: 6px;
+        }
+        .wc-divider {
+            width: 1px;
+            height: 48px;
+            background: rgba(0,0,0,0.1);
+            margin: 0 1rem;
+        }
+        .wc-sec-label {
+            font-size: 12px;
+            color: #888780;
+            margin-bottom: 4px;
+            text-align: right;
+        }
+        .wc-sec-value {
+            font-size: 28px;
+            font-weight: 500;
+            color: #888780;
+            letter-spacing: -0.5px;
+            line-height: 1;
+            text-align: right;
+        }
+        .wc-timezone-badge {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #f1efe8;
+            border: 0.5px solid rgba(0,0,0,0.1);
+            color: #888780;
+            margin-top: 6px;
+            display: inline-block;
+        }
+
+        /* Converter */
+        .wc-converter {
+            background: #ffffff;
+            border: 0.5px solid rgba(0,0,0,0.12);
+            border-radius: 12px;
+            padding: 1.25rem 1.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .wc-converter-label {
+            font-size: 12px;
+            color: #888780;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        .wc-converter-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .wc-converter-row span {
+            font-size: 14px;
+            color: #888780;
+        }
+        .wc-converter-row input,
+        .wc-converter-row select {
+            font-size: 14px;
+            padding: 7px 10px;
+            border-radius: 8px;
+            border: 0.5px solid rgba(0,0,0,0.2);
+            background: #f1efe8;
+            color: #1a1a18;
+            outline: none;
+            font-family: inherit;
+        }
+        .wc-converter-row input:focus,
+        .wc-converter-row select:focus {
+            border-color: rgba(0,0,0,0.35);
+        }
+        .wc-result {
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a18;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .wc-result-icon { color: #888780; }
+
+        /* Grid */
+        .wc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 10px;
+        }
+        .wc-card {
+            background: #ffffff;
+            border: 0.5px solid rgba(0,0,0,0.12);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            transition: border-color 0.2s;
+        }
+        .wc-card:hover { border-color: rgba(0,0,0,0.25); }
+        .wc-card-city {
+            font-size: 13px;
+            color: #888780;
+            margin-bottom: 4px;
+        }
+        .wc-card-time {
+            font-size: 24px;
+            font-weight: 500;
+            color: #1a1a18;
+            letter-spacing: -0.5px;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .wc-card-tz {
+            font-size: 12px;
+            color: #b4b2a9;
+            margin-bottom: 10px;
+        }
+        .wc-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 3px 9px;
+            border-radius: 20px;
+            border: 0.5px solid;
+        }
+        .wc-badge-behind {
+            background: #FCEBEB;
+            color: #A32D2D;
+            border-color: #F7C1C1;
+        }
+        .wc-badge-ahead {
+            background: #EAF3DE;
+            color: #3B6D11;
+            border-color: #C0DD97;
+        }
+        .wc-badge-same {
+            background: #E6F1FB;
+            color: #185FA5;
+            border-color: #B5D4F4;
+        }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            body { background: #1a1a18; color: #f1efe8; }
+            .wc-header, .wc-converter, .wc-card {
+                background: #2c2c2a;
+                border-color: rgba(255,255,255,0.1);
+            }
+            .wc-card:hover { border-color: rgba(255,255,255,0.2); }
+            .wc-home-time, .wc-card-time { color: #f1efe8; }
+            .wc-home-date, .wc-header-label, .wc-converter-label,
+            .wc-sec-label, .wc-sec-value, .wc-card-city,
+            .wc-converter-row span { color: #888780; }
+            .wc-card-tz { color: #5f5e5a; }
+            .wc-timezone-badge { background: #444441; border-color: rgba(255,255,255,0.1); color: #888780; }
+            .wc-divider { background: rgba(255,255,255,0.1); }
+            .wc-converter-row input, .wc-converter-row select {
+                background: #444441;
+                border-color: rgba(255,255,255,0.15);
+                color: #f1efe8;
+            }
+            .wc-converter-row input:focus, .wc-converter-row select:focus {
+                border-color: rgba(255,255,255,0.3);
+            }
+            .wc-result { color: #f1efe8; }
+            .wc-badge-behind { background: #501313; color: #F7C1C1; border-color: #791F1F; }
+            .wc-badge-ahead  { background: #173404; color: #C0DD97; border-color: #27500A; }
+            .wc-badge-same   { background: #042C53; color: #B5D4F4; border-color: #0C447C; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="wc-wrap">
+
+    <div class="wc-header">
+        <div>
+            <div class="wc-header-label">India — IST</div>
+            <div class="wc-home-time" id="ist-time">--:--</div>
+            <div class="wc-home-date" id="ist-date">Loading…</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <div class="wc-divider"></div>
+            <div style="text-align:right;">
+                <div class="wc-sec-label">seconds</div>
+                <div class="wc-sec-value" id="ist-sec">--</div>
+                <div class="wc-timezone-badge">UTC +5:30</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="wc-converter">
+        <div class="wc-converter-label">Time zone converter</div>
+        <div class="wc-converter-row">
+            <span>If it's</span>
+            <input type="time" id="calc-time" />
+            <span>in</span>
+            <select id="calc-city">
+                <option value="Asia/Dubai">Dubai (UAE)</option>
+                <option value="Europe/London">London (UK)</option>
+                <option value="America/New_York">New York (ET)</option>
+                <option value="America/Los_Angeles">San Francisco (PT)</option>
+                <option value="Australia/Sydney">Sydney (AET)</option>
+            </select>
+        </div>
+        <div class="wc-result" id="calc-result">
+            <i class="ti ti-clock wc-result-icon" aria-hidden="true"></i>
+            <span style="color:#888780;">Select a time above to convert it to IST</span>
+        </div>
+    </div>
+
+    <div class="wc-grid" id="clock-grid"></div>
+
+</div>
+
+<script>
+    const locations = [
+        { city: "Dubai",         zone: "Asia/Dubai",          flag: "AE" },
+        { city: "London",        zone: "Europe/London",       flag: "GB" },
+        { city: "New York",      zone: "America/New_York",    flag: "US" },
+        { city: "San Francisco", zone: "America/Los_Angeles", flag: "US" },
+        { city: "Melbourne",        zone: "Australia/Melbourne",    flag: "AU" },
+         { city: "Texas",        zone: "America/Chicago",    flag: "US" }
+    ];
+
+    function flagEmoji(code) {
+        return [...code.toUpperCase()].map(c => String.fromCodePoint(c.charCodeAt(0) + 127397)).join('');
+    }
+
+    function updateClocks() {
+        const now = new Date();
+        
+        // Switched hour12 to true and locale to en-US for AM/PM formatting
+        const timeOpts = { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true };
+        const secOpts  = { timeZone: 'Asia/Kolkata', second: '2-digit', hour12: false };
+        const dateOpts = { timeZone: 'Asia/Kolkata', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+
+        document.getElementById('ist-time').textContent = now.toLocaleTimeString('en-US', timeOpts);
+        document.getElementById('ist-sec').textContent  = now.toLocaleTimeString('en-GB', secOpts);
+        document.getElementById('ist-date').textContent = now.toLocaleDateString('en-US', dateOpts);
+
+        const fmt = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false };
+        const istWall = new Date(new Intl.DateTimeFormat('en-US', { ...fmt, timeZone: 'Asia/Kolkata' }).format(now));
+
+        const grid = document.getElementById('clock-grid');
+        grid.innerHTML = '';
+
+        locations.forEach(loc => {
+            const targetWall = new Date(new Intl.DateTimeFormat('en-US', { ...fmt, timeZone: loc.zone }).format(now));
+            const diffHours  = (targetWall - istWall) / 3600000;
+
+            // Switched hour12 to true and locale to en-US for AM/PM formatting on grid cards
+            const displayTime = now.toLocaleTimeString('en-US', { timeZone: loc.zone, hour: '2-digit', minute: '2-digit', hour12: true });
+            const displayDate = now.toLocaleDateString('en-US', { timeZone: loc.zone, month: 'short', day: 'numeric', weekday: 'short' });
+            const tzAbbr      = now.toLocaleTimeString('en-US', { timeZone: loc.zone, timeZoneName: 'short' }).split(' ').pop();
+
+            let label, cls;
+            if (Math.abs(diffHours) < 0.01) {
+                label = 'Same as India'; cls = 'wc-badge-same';
+            } else if (diffHours > 0) {
+                const h = Math.abs(diffHours);
+                label = `${h % 1 === 0 ? h : h.toFixed(1)}h ahead`; cls = 'wc-badge-ahead';
+            } else {
+                const h = Math.abs(diffHours);
+                label = `${h % 1 === 0 ? h : h.toFixed(1)}h behind`; cls = 'wc-badge-behind';
+            }
+
+            const card = document.createElement('div');
+            card.className = 'wc-card';
+            card.innerHTML = `
+                <div class="wc-card-city">${flagEmoji(loc.flag)} ${loc.city}</div>
+                <div class="wc-card-time">${displayTime}</div>
+                <div class="wc-card-tz">${displayDate} · ${tzAbbr}</div>
+                <span class="wc-badge ${cls}">${label}</span>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function convertTime() {
+        const timeVal = document.getElementById('calc-time').value;
+        const zoneVal = document.getElementById('calc-city').value;
+        const resultEl = document.getElementById('calc-result');
+
+        if (!timeVal) {
+            resultEl.innerHTML = '<i class="ti ti-clock wc-result-icon" aria-hidden="true"></i><span style="color:#888780;">Select a time above to convert it to IST</span>';
+            return;
+        }
+
+        const now = new Date();
+        const fmt = { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false };
+        const targetWall = new Date(new Intl.DateTimeFormat('en-US', { ...fmt, timeZone: zoneVal }).format(now));
+        const istWall    = new Date(new Intl.DateTimeFormat('en-US', { ...fmt, timeZone: 'Asia/Kolkata' }).format(now));
+        const diffHours  = (targetWall - istWall) / 3600000;
+
+        let [h, m] = timeVal.split(':').map(Number);
+        let totalMin = h * 60 + m - Math.round(diffHours * 60);
+        let dayNote = '';
+        if (totalMin >= 1440)  { totalMin -= 1440; dayNote = ' (next day)'; }
+        else if (totalMin < 0) { totalMin += 1440; dayNote = ' (previous day)'; }
+
+        let oh = Math.floor(totalMin / 60), om = Math.round(totalMin % 60);
+        let ampm = oh >= 12 ? 'PM' : 'AM';
+        let dh = oh % 12 || 12;
+        let dm = om < 10 ? '0' + om : om;
+
+        resultEl.innerHTML = `<i class="ti ti-arrow-right wc-result-icon" aria-hidden="true"></i><span>That's <strong>${dh}:${dm} ${ampm} IST</strong>${dayNote}</span>`;
+    }
+
+    document.getElementById('calc-time').addEventListener('input', convertTime);
+    document.getElementById('calc-city').addEventListener('change', convertTime);
+
+    updateClocks();
+    setInterval(updateClocks, 1000);
+</script>
+
+</body>
+</html>
